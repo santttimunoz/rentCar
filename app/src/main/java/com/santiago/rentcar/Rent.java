@@ -3,11 +3,18 @@ package com.santiago.rentcar;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.DatePickerDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -15,12 +22,20 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,20 +44,30 @@ public class Rent extends AppCompatActivity {
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    EditText etRentNumber, etUserName, etPlateNumber, etDate;
+    EditText etrEndDate, etrFirstDate;
     Button btnrSave, btnrCars, btnrUsers;
+
+    Spinner spinnerRent;
+
+    //estas dos variables deben ser globales para que se puedan hacer las validaciones en los metodos mostrarDate1 y mostrarDate2
+    Calendar selectedDate1, selectedDate2;
+
+    TextView logOut;
+
+    String rentNumber = "0" ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rent);
 
-        etRentNumber = findViewById(R.id.etrRentNumber);
-        etUserName = findViewById(R.id.etrUserName);
-        etPlateNumber = findViewById(R.id.etrPlateNumber);
-        etDate = findViewById(R.id.etrDate);
+
+        spinnerRent = findViewById(R.id.spinnerRent);
+        etrFirstDate = findViewById(R.id.etrFirstDate);
+        etrEndDate = findViewById(R.id.etrEndDate);
         btnrSave = findViewById(R.id.btnrSave);
         btnrCars = findViewById(R.id. btnrCars);
-        btnrUsers = findViewById(R.id.btnrUsers);
+        logOut = findViewById(R.id.tvLogout);
+
 
         btnrCars.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -51,103 +76,192 @@ public class Rent extends AppCompatActivity {
             }
         });
 
-        btnrUsers.setOnClickListener(new View.OnClickListener() {
+
+
+        logOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                startActivity(new Intent(getApplicationContext(), LogIn.class));
             }
         });
 
 
-       btnrSave.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View v) {
-               if (!etRentNumber.getText().toString().isEmpty() && !etUserName.getText().toString().isEmpty()) {
 
-                   Query queryUsers = db.collection("users")
-                           .whereEqualTo("Username", etUserName.getText().toString());
+        //spinner para mostrar las placas(valores traidos desde firebase)
+        db.collection("cars").whereEqualTo("State", "Able")
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                ArrayList<String> opciones = new ArrayList<>();
+                //agrega una opcion vacia al spinner
+                opciones.add("");
+                for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                    String opcion = documentSnapshot.getString("PlateNumber");
+                    opciones.add(opcion);
+                }
 
-                   Query queryCars = db.collection("cars")
-                           .whereEqualTo("PlateNumber", etPlateNumber.getText().toString());
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(Rent.this,
+                        android.R.layout.simple_spinner_item, opciones);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-                   Query queryCarsable = db.collection("cars")
-                           .whereEqualTo("State", "Disable").whereEqualTo("PlateNumber", etPlateNumber.getText().toString());
+                spinnerRent.setAdapter(adapter);
+
+                //selecciona la primera opvion(en este vacion por opciones.add("");) del spinner
+                spinnerRent.setSelection(0);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                // Manejar el error si ocurre
+            }
+        });
+
+        etrFirstDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mostrarDate1();
+            }
+        });
+
+        etrEndDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mostrarDate2();
+            }
+        });
 
 
-                   Task<List<QuerySnapshot>> combinedTask = Tasks.whenAllSuccess(queryUsers.get(), queryCars.get(), queryCarsable.get());
+    btnrSave.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
 
-                   combinedTask.addOnCompleteListener(task -> {
-                       if(task.isSuccessful()){
-                           List<QuerySnapshot> querySnapshots = task.getResult();
-                           QuerySnapshot usersSnapshot = querySnapshots.get(0);
-                           QuerySnapshot carssSnapshot = querySnapshots.get(1);
-                           QuerySnapshot carableSnapshot = querySnapshots.get(2);
+            //con los spinners no se utilisa .getText() sino .getSelectedItem()
+            if(!spinnerRent.getSelectedItem().toString().isEmpty() && !etrFirstDate.getText().toString().isEmpty()  && !etrEndDate.getText().toString().isEmpty()){
+
+                db.collection("rents")
+                        .whereEqualTo("plateNumber", spinnerRent.getSelectedItem().toString())
+                        .get()
+                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                               if(task.isSuccessful()){
+                                   if(task.getResult().isEmpty()){// si esta vacio el getResult es porque no se encontro alguna consulta y guarda los datos
+
+                                       //campo autoincremental
+                                       rentNumber = String.valueOf(Integer.parseInt(rentNumber) + 1);
+                                       Map<String, Object> rent = new HashMap<>();
+                                       rent.put("plateNumber", spinnerRent.getSelectedItem().toString());
+                                       rent.put("rentDay", etrFirstDate.getText().toString());
+                                       rent.put("returnDay", etrEndDate.getText().toString());
+                                       rent.put("rentNumber", rentNumber);
 
 
-                           if(usersSnapshot.isEmpty() || carssSnapshot.isEmpty()){
-                               Toast.makeText(getApplicationContext(), "usuario o carro no existen", Toast.LENGTH_SHORT).show();
-
-                           }
-                           //si la consulta encuentra algo entra en esta condicion
-                           else if(!carableSnapshot.isEmpty()){
-                               Toast.makeText(getApplicationContext(), "carro no disponible", Toast.LENGTH_SHORT).show();
-                           }
-
-                           else{
-                               db.collection("rents")
-                                       .whereEqualTo("rentNumber", etRentNumber.getText().toString())
-                                       .get()
-                                       .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                           @Override
-                                           public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                               if (task.isSuccessful()) {
-                                                   if (task.getResult().isEmpty()) {
-                                                       // No Encontró el documento con el username específico
-                                                       // Create a new user with a first and last name
-                                                       Map<String, Object> rent = new HashMap<>();
-                                                       rent.put("rentNumber", etRentNumber.getText().toString());
-                                                       rent.put("userName", etUserName.getText().toString());
-                                                       rent.put("plateNumber", etPlateNumber.getText().toString());
-                                                       rent.put("date", etDate.getText().toString());
-
-                                                       // Add a new document with a generated ID
-                                                       db.collection("rents")
-                                                               .add(rent)
-                                                               .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                                                                   @Override
-                                                                   public void onSuccess(DocumentReference documentReference) {
-                                                                       Toast.makeText(getApplicationContext(), "rent creado correctamente... ", Toast.LENGTH_SHORT).show();
-                                                                       etRentNumber.setText("");
-                                                                       etUserName.setText("");
-                                                                       etPlateNumber.setText("");
-                                                                       etDate.setText("");
-                                                                   }
-                                                               })
-                                                               .addOnFailureListener(new OnFailureListener() {
-                                                                   @Override
-                                                                   public void onFailure(@NonNull Exception e) {
-                                                                       Toast.makeText(getApplicationContext(), "Error al crear el rent: " + e, Toast.LENGTH_SHORT).show();
-                                                                   }
-                                                               });
-
-                                                   } else {
-                                                       Toast.makeText(getApplicationContext(), "rent Existente. Inténelo con otro ...", Toast.LENGTH_SHORT).show();
+                                       db.collection("rents")
+                                               .add(rent)
+                                               .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                                   @Override
+                                                   public void onComplete(@NonNull Task<DocumentReference> task) {
+                                                       Toast.makeText(Rent.this, "Renta realizada exitosamente", Toast.LENGTH_SHORT).show();
                                                    }
-                                               }
+                                               });
+                                       //actualizar el stado del carro en la colleccion cars
 
-                                           }
-                                       });
-                           }
 
-                       }
-                   });
+                                   }else{
+                                       Toast.makeText(Rent.this, "Vehiculo esta rentado, intente con otro", Toast.LENGTH_SHORT).show();
+                                   }
+                               }
+                            }
+                        });
+            }else{
+                Toast.makeText(Rent.this, "For favor llene todos los campos", Toast.LENGTH_SHORT).show();
+            }
 
-               }
-           }
-       });
+        }
+    });
+
+
+
+
 
 
 
     }
+    public void mostrarDate1() {
+        // de esta forma se Obtiene la fecha actual
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
 
+        //variable global(obetencion de valor global para usarse en el metodo mostrarDate2)
+        selectedDate1 = Calendar.getInstance();
+
+        // Crea una instancia del DatePickerDialog
+
+        DatePickerDialog datePickerDialog1 = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int selectedYear, int selectedMonth, int selectedDayOfMonth) {
+
+                selectedDate1.set(selectedYear, selectedMonth, selectedDayOfMonth);
+
+                // Verifica si la fecha seleccionada es menor a la fecha actual
+                if (selectedDate1.before(calendar)) {
+                    // La fecha seleccionada es menor a la fecha actual, muestra un mensaje de error o realiza alguna acción
+                    Toast.makeText(getApplicationContext(), "La fecha seleccionada no puede ser menor a la fecha actual", Toast.LENGTH_SHORT).show();
+                    etrFirstDate.setText("");
+                }else{
+                   String fechaSeleccionada1 = selectedDayOfMonth + "/" + (selectedMonth + 1) + "/" + selectedYear;
+
+                    etrFirstDate.setText(fechaSeleccionada1);
+
+
+
+                }
+            }
+        }, year, month, dayOfMonth);
+
+        datePickerDialog1.show();
+
+    }
+    public void mostrarDate2() {
+        // de esta forma se Obtiene la fecha actual
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+
+         //variable global
+         selectedDate2 = Calendar.getInstance();
+
+        // Crea una instancia del DatePickerDialog
+
+        DatePickerDialog datePickerDialog1 = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int selectedYear, int selectedMonth, int selectedDayOfMonth) {
+
+                selectedDate2.set(selectedYear, selectedMonth, selectedDayOfMonth);
+
+                // Verifica si la fecha seleccionada es menor a la fecha actual
+                if(selectedDate2.before(calendar)){
+                    Toast.makeText(getApplicationContext(), "La fecha seleccionada no puede ser menor a la fecha actual", Toast.LENGTH_SHORT).show();
+                }
+                //la variable selectedDate1 tiene obtiene su valor del primer metodo(mostrarDate1)
+                else if(selectedDate2.before(selectedDate1)) {
+                    // La fecha seleccionada es menor a la fecha actual, muestra un mensaje de error o realiza alguna acción
+                    Toast.makeText(getApplicationContext(), "La fecha seleccionada no puede ser menor a la fecha inicial", Toast.LENGTH_SHORT).show();
+                    etrEndDate.setText("");
+                }else{
+                    String fechaSeleccionada2= selectedDayOfMonth + "/" + (selectedMonth + 1) + "/" + selectedYear;
+
+                    etrEndDate.setText(fechaSeleccionada2);
+
+                }
+            }
+        }, year, month, dayOfMonth);
+
+        datePickerDialog1.show();
+
+    }
 }

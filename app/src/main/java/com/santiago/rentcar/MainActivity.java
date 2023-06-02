@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -26,34 +27,37 @@ public class MainActivity extends AppCompatActivity {
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    EditText etUsername, etName, etPassword;
-    Button btnSave, btnLogin, btnCars, btnRent;
+    EditText etUsername, etName, etPassword, etReservedw;
+    Button btnSave, btnLogin;
+
+    RadioButton rbUser, rbAdmin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         etUsername = findViewById(R.id.etUserName);
         etName = findViewById(R.id.etName);
         etPassword = findViewById(R.id.etPassword);
         btnSave = findViewById(R.id.btnSave);
-        btnLogin = findViewById(R.id.btnLogin);
-        btnCars = findViewById(R.id.btnCars);
-        btnRent = findViewById(R.id.btnRent);
+        etReservedw = findViewById(R.id.etReservedw);
+        rbUser = findViewById(R.id.rbUser);
+        rbAdmin = findViewById(R.id.rbAdmin);
+        btnLogin = findViewById(R.id.btnLoginUs);
 
-        btnCars.setOnClickListener(new View.OnClickListener() {
+      Intent intent = new Intent(this, LogIn.class);
+        startActivity(intent);
+
+
+        btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), Cars.class));
+                startActivity(new Intent(getApplicationContext(), LogIn.class));
             }
         });
-        btnRent.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), Rent.class));
-            }
-        });
+
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -68,10 +72,13 @@ public class MainActivity extends AppCompatActivity {
                                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                     if (task.isSuccessful()) {
                                         if (task.getResult().isEmpty()) {
+
                                             Map<String, Object> user = new HashMap<>();
                                             user.put("Username", etUsername.getText().toString());
                                             user.put("Name", etName.getText().toString());
                                             user.put("Password", etPassword.getText().toString());
+                                            user.put("ReservedWord", etReservedw.getText().toString());
+                                            user.put("Rol", rbUser.isChecked() ? "User" : "Admin");
 
                                             db.collection("users")
                                                     .add(user)

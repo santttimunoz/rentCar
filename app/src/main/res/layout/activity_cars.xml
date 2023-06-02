@@ -44,14 +44,13 @@
         app:layout_constraintTop_toBottomOf="@+id/etcPlateNumber" />
 
 
-
     <RadioGroup
         android:id="@+id/radioGroup"
         android:layout_width="210dp"
         android:layout_height="96dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/etcBrand">
+        app:layout_constraintTop_toBottomOf="@+id/etDvalue">
 
         <RadioButton
             android:id="@+id/rbAble"
@@ -71,44 +70,92 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="28dp"
-        android:text="save"
         android:backgroundTint="@color/black"
-        app:layout_constraintEnd_toStartOf="@+id/button3"
-        app:layout_constraintHorizontal_bias="0.246"
+        android:text="save"
+        app:layout_constraintEnd_toStartOf="@+id/btnSearch"
+        app:layout_constraintHorizontal_bias="0.327"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/btnSearch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="28dp"
         android:layout_marginEnd="68dp"
-        android:text="Button"
+        android:text="Search"
         android:backgroundTint="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
 
     <Button
-        android:id="@+id/btncUsers"
+        android:id="@+id/btncRent"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/black"
+        android:text="Rent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnUpdate" />
+
+    <EditText
+        android:id="@+id/etDvalue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Users"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:hint="DailyValue"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etcBrand" />
+
+    <Button
+        android:id="@+id/btnDelete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:backgroundTint="@color/black"
-        app:layout_constraintEnd_toStartOf="@+id/btncRent"
-        app:layout_constraintHorizontal_bias="0.246"
+        android:text="delete"
+        app:layout_constraintEnd_toStartOf="@+id/btnUpdate"
+        app:layout_constraintHorizontal_bias="0.329"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btncSave" />
 
     <Button
-        android:id="@+id/btncRent"
+        android:id="@+id/btnUpdate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
         android:layout_marginEnd="68dp"
-        android:text="Rent"
         android:backgroundTint="@color/black"
+        android:text="update"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button3" />
+        app:layout_constraintTop_toBottomOf="@+id/btnSearch" />
+
+    <TextView
+        android:id="@+id/tvListCars"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Able Cars List"
+        android:textColor="@color/teal_700"
+        android:textSize="17dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btncRent" />
+
+    <TextView
+        android:id="@+id/tvLogout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Log Out"
+        android:textColor="@color/teal_700"
+        android:textStyle="bold"
+        android:textSize="17dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvListCars" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
