@@ -32,27 +32,27 @@ public class CarsList extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cars_list);
 
-        listcarscl = findViewById(R.id.listCars);
+       listcarscl = findViewById(R.id.listCars);
+        btnBack = findViewById(R.id.btnBack);
 
-        db.collection("cars").whereEqualTo("State", "Able")
+         db.collection("cars").whereEqualTo("State", "Able")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if(task.isSuccessful()){
                             ArrayList<String> itemList = new ArrayList<>();
-                            itemList.clear();
+
                             for (QueryDocumentSnapshot document : task.getResult()) {
-                                String item = "Placa: " + document.getString("PlateNumber") + " | Rol: " + document.getString("State");
+                                String item = "Placa: " + document.getString("PlateNumber") + " | State: " + document.getString("State");
                                 itemList.add(item);
                             }
                             ArrayAdapter<String> adapter = new ArrayAdapter<>(CarsList.this, android.R.layout.simple_list_item_1, itemList);
-                            adapter.notifyDataSetChanged();
+
                             listcarscl.setAdapter(adapter);
                         }
                     }
                 });
-
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -29,6 +29,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -45,14 +46,15 @@ public class Rent extends AppCompatActivity {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     EditText etrEndDate, etrFirstDate;
-    Button btnrSave, btnrCars, btnrUsers;
+    Button btnrSave, btnrCars;
+
 
     Spinner spinnerRent;
 
     //estas dos variables deben ser globales para que se puedan hacer las validaciones en los metodos mostrarDate1 y mostrarDate2
     Calendar selectedDate1, selectedDate2;
 
-    TextView logOut;
+    TextView logOut, listAble;
 
     String rentNumber = "0" ;
     @Override
@@ -67,7 +69,7 @@ public class Rent extends AppCompatActivity {
         btnrSave = findViewById(R.id.btnrSave);
         btnrCars = findViewById(R.id. btnrCars);
         logOut = findViewById(R.id.tvLogout);
-
+        listAble = findViewById(R.id.tvList);
 
         btnrCars.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -85,6 +87,12 @@ public class Rent extends AppCompatActivity {
             }
         });
 
+        listAble.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getApplicationContext(), CarsList.class));
+            }
+        });
 
 
         //spinner para mostrar las placas(valores traidos desde firebase)
@@ -146,6 +154,7 @@ public class Rent extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                if(task.isSuccessful()){
+                                   QuerySnapshot queryS = task.getResult();
                                    if(task.getResult().isEmpty()){// si esta vacio el getResult es porque no se encontro alguna consulta y guarda los datos
 
                                        //campo autoincremental
@@ -165,6 +174,7 @@ public class Rent extends AppCompatActivity {
                                                        Toast.makeText(Rent.this, "Renta realizada exitosamente", Toast.LENGTH_SHORT).show();
                                                    }
                                                });
+
                                        //actualizar el stado del carro en la colleccion cars
 
 

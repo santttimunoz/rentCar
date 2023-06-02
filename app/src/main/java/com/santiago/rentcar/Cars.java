@@ -74,6 +74,13 @@ public class Cars extends AppCompatActivity {
             }
         });
 
+        listCars.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getApplicationContext(), CarsList.class));
+            }
+        });
+
 
         btncSave.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -88,6 +95,7 @@ public class Cars extends AppCompatActivity {
                                 @Override
                                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                     if (task.isSuccessful()) {
+                                        QuerySnapshot queryS = task.getResult();
                                         if (task.getResult().isEmpty()) {
                                             // No Encontró el documento con el username específico
                                             // Create a new user with a first and last name
@@ -104,6 +112,7 @@ public class Cars extends AppCompatActivity {
                                                         @Override
                                                         public void onSuccess(DocumentReference documentReference) {
                                                             Toast.makeText(getApplicationContext(), "Vehiculo  creado correctamente... ", Toast.LENGTH_SHORT).show();
+
                                                         }
                                                     })
                                                     .addOnFailureListener(new OnFailureListener() {
@@ -113,8 +122,9 @@ public class Cars extends AppCompatActivity {
                                                         }
                                                     });
 
+
                                         } else {
-                                            Toast.makeText(getApplicationContext(), "Vehiiculo Existente. Inténelo con otro ...", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getApplicationContext(), "Vehiculo Existente. Inténelo con otro ...", Toast.LENGTH_SHORT).show();
                                         }
                                     }
 
