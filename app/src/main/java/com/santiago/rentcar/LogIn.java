@@ -27,7 +27,9 @@ public class LogIn extends AppCompatActivity {
     EditText user, password;
     TextView forgotPass, singUp;
     Button btnLogin;
-    String rol = "Admin";
+
+    Button bn = new Rent().btnrCars;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,6 +40,7 @@ public class LogIn extends AppCompatActivity {
         forgotPass = findViewById(R.id.tvForgotpass);
         singUp = findViewById(R.id.tvSingup);
         btnLogin = findViewById(R.id.btnLogin);
+
 
         forgotPass.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -83,8 +86,8 @@ public class LogIn extends AppCompatActivity {
                             }else if(!resultUser.isEmpty() && !resultPass.isEmpty() && !resultRolUs.isEmpty()){
 
                                 Toast.makeText(LogIn.this, "Bienvenido User", Toast.LENGTH_SHORT).show();
-                                startActivity(new Intent(getApplicationContext(), Rent.class));
-
+                                Intent intent = new Intent(getApplicationContext(), Rent.class);
+                                startActivity(intent);
 
                             }else{
                                 Toast.makeText(LogIn.this, "Usuario o contrasena incorrecta", Toast.LENGTH_SHORT).show();

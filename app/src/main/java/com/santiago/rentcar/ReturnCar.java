@@ -39,7 +39,7 @@ public class ReturnCar extends AppCompatActivity {
 
     EditText rcPlate, returnDate;
 
-    Button save;
+    Button save, btnRents, btnCars;
 
     TextView logOut;
 
@@ -59,6 +59,8 @@ public class ReturnCar extends AppCompatActivity {
         save = findViewById(R.id.btnSave);
         logOut = findViewById(R.id.tvLogout);
         spinnerRc = findViewById(R.id.spinnerRc);
+        btnCars = findViewById(R.id.btnCars);
+        btnRents = findViewById(R.id.btnRents);
 
 
         //codigo para realizar el spinner que muestra el numero de la renta
@@ -104,6 +106,19 @@ public class ReturnCar extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getApplicationContext(), LogIn.class));
+            }
+        });
+
+        btnCars.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), Cars.class));
+            }
+        });
+        btnRents.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), Rent.class));
             }
         });
 

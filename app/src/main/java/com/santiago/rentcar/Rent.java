@@ -46,8 +46,7 @@ public class Rent extends AppCompatActivity {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     EditText etrEndDate, etrFirstDate;
-    Button btnrSave, btnrCars;
-
+    Button btnrSave, btnrCars, btnReturn;
 
     Spinner spinnerRent;
 
@@ -57,11 +56,12 @@ public class Rent extends AppCompatActivity {
     TextView logOut, listAble;
 
     String rentNumber = "0" ;
+
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rent);
-
 
         spinnerRent = findViewById(R.id.spinnerRent);
         etrFirstDate = findViewById(R.id.etrFirstDate);
@@ -70,6 +70,7 @@ public class Rent extends AppCompatActivity {
         btnrCars = findViewById(R.id. btnrCars);
         logOut = findViewById(R.id.tvLogout);
         listAble = findViewById(R.id.tvList);
+        btnReturn = findViewById(R.id.btnReturn);
 
         btnrCars.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -78,6 +79,12 @@ public class Rent extends AppCompatActivity {
             }
         });
 
+        btnReturn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), ReturnCar.class));
+            }
+        });
 
 
         logOut.setOnClickListener(new View.OnClickListener() {
@@ -175,7 +182,7 @@ public class Rent extends AppCompatActivity {
                                                    }
                                                });
 
-                                       //actualizar el stado del carro en la colleccion cars
+
 
 
                                    }else{
@@ -184,18 +191,31 @@ public class Rent extends AppCompatActivity {
                                }
                             }
                         });
+                //actualizar el stado del carro en la colleccion cars
+                db.collection("cars")
+                        .whereEqualTo("State", "Able")
+                        .get()
+                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                               if(task.isSuccessful()){
+                                   QuerySnapshot querySnapshot = task.getResult();
+                                   if(!task.getResult().isEmpty()){
+                                       DocumentSnapshot document = querySnapshot.getDocuments().get(0);
+                                       Map<String, Object> car = new HashMap<>();
+                                       car.put("State", "Disable");
+                                       document.getReference().update(car);
+                                   }
+                               }
+                            }
+                        });
+
             }else{
                 Toast.makeText(Rent.this, "For favor llene todos los campos", Toast.LENGTH_SHORT).show();
             }
 
         }
     });
-
-
-
-
-
-
 
     }
     public void mostrarDate1() {

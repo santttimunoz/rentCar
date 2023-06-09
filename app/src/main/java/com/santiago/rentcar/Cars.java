@@ -38,7 +38,7 @@ public class Cars extends AppCompatActivity {
 
     EditText etPlateNumber, etBrand, etDvalue;
     RadioButton rbAble, rbDisable;
-    Button btncSave, btnDelete, btnUpdate, btnSearch, btncUsers, btncRent;
+    Button btncSave, btnDelete, btnUpdate, btnSearch, btnReturn, btnRent;
 
     TextView logOut, listCars;
 
@@ -56,14 +56,21 @@ public class Cars extends AppCompatActivity {
         btnDelete = findViewById(R.id.btnDelete);
         btnUpdate = findViewById(R.id.btnUpdate);
         btnSearch = findViewById(R.id.btnSearch);
-        btncRent = findViewById(R.id.btncRent);
+        btnRent = findViewById(R.id.btnRent);
         logOut = findViewById(R.id.tvLogout);
         listCars = findViewById(R.id.tvListCars);
+        btnReturn = findViewById(R.id.btnReturn);
 
-        btncRent.setOnClickListener(new View.OnClickListener() {
+        btnRent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getApplicationContext(), Rent.class));
+            }
+        });
+        btnReturn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), ReturnCar.class));
             }
         });
 
